@@ -1,53 +1,92 @@
 import * as alt from 'alt-client';
 import * as native from 'natives';
+import { FingerPoint } from '../handling/fingerPoint';
 import { Action } from '../enums/actions';
-import { Key, NativeKey } from '../enums/keys';
-import { TaskId } from '../enums/taskId';
+import { Key } from '../enums/keys';
 import { getClosestVehicle } from '../lib/distance';
+import { animationList } from '../enums/animationList';
 
 // https://docs.fivem.net/docs/game-references/controls/
-alt.everyTick(() => {
-    native.disableControlAction(0, NativeKey.InputEnter, true);
-    if (native.isDisabledControlJustPressed(0, NativeKey.InputEnter)) {
-        if (native.getIsTaskActive(alt.Player.local.scriptID, TaskId.CTaskEnterVehicle)) {
-            native.clearPedTasksImmediately(alt.Player.local.scriptID);
-            return;
-        }
-        if (
-            alt.Player.local.vehicle &&
-            native.isPedInVehicle(alt.Player.local.scriptID, alt.Player.local.vehicle.scriptID, false)
-        ) {
-            alt.emit(Action.PlayerExitVehicle);
-        } else {
-            alt.emit(Action.PlayerEnterVehicle);
-        }
-    }
-});
+
+let intervalEngine;
 
 alt.on('keydown', (key) => {
-    if (alt.isMenuOpen() || native.isPauseMenuActive()) return;
+    if (alt.isMenuOpen() || native.isPauseMenuActive()) {
+        if (key === Key.Esc || key === Key.P || key === Key.BACKSPACE) {
+            if (native.isPedOnFoot(alt.Player.local.scriptID)) {
+                alt.emit(Action.PlayerClearAnim);
+            }
+        }
+        return;
+    }
+    if (key === Key.F) {
+        //429 - _PED_FLAG_DISABLE_STARTING_VEH_ENGINE
+        native.setPedConfigFlag(alt.Player.local.scriptID, 429, true);
+        if (
+            alt.Player.local.vehicle &&
+            native.getIsVehicleEngineRunning(alt.Player.local.vehicle.scriptID) &&
+            alt.Player.local.seat === 1
+        ) {
+            intervalEngine = alt.setInterval(() => {
+                if (!alt.Player.local.vehicle) {
+                    alt.clearInterval(intervalEngine);
+                    return;
+                }
+                native.setVehicleHandbrake(alt.Player.local.vehicle.scriptID, false);
+                native.setVehicleEngineOn(alt.Player.local.vehicle.scriptID, true, true, false);
+            }, 100);
+        }
+    }
+    if (key === Key.G) {
+        alt.emit(Action.PlayerEnterVehicle);
+    }
+    if (key == Key.B) {
+        FingerPoint.start();
+    }
     if (key === Key.E) {
         // Car window
-        if (native.isPed alt.Player.local)
         if (alt.Player.local.vehicle) {
             alt.emit(Action.PlayerToggleCarWindow);
             return;
         }
 
-        if (getClosestVehicle(alt.Player.local, 5).vehicle?.scriptID) {
+        if (getClosestVehicle(alt.Player.local, 10).vehicle?.scriptID) {
             alt.emit(Action.PlayerToggleCarDoor);
             return;
         }
 
-        alt.emit(Action.PlayerWhistle);
+        // Taxi animation
+        alt.emit(Action.PlayerPlayAnim, animationList.taxi);
+        alt.emitServer(Action.PlayerWhistleStart, alt.Player.local.scriptID);
     }
 });
 
 alt.on('keyup', (key) => {
-    if (alt.isMenuOpen() || native.isPauseMenuActive()) return;
+    if (alt.isMenuOpen() || native.isPauseMenuActive()) {
+        return;
+    }
+    if (key === Key.Esc || key === Key.P) {
+        alt.emit(Action.PlayerPlayOpenMap);
+    }
     if (key === Key.E) {
-        if (!getClosestVehicle(alt.Player.local, 5).vehicle?.scriptID) {
-            alt.emit(Action.PlayerClearAnim);
+        alt.emit(Action.PlayerWhistleStop);
+    }
+    if (key === Key.F && intervalEngine) {
+        alt.clearInterval(intervalEngine);
+    }
+    if (key == Key.B) {
+        FingerPoint.stop();
+    }
+    // Start the engine UP Arrow
+    if (key === Key.UP) {
+        if (alt.Player.local.vehicle) {
+            native.setVehicleEngineOn(alt.Player.local.vehicle.scriptID, true, false, true);
+        }
+    }
+    // Stop the engine DOWN Arrow
+    if (key === Key.DOWN) {
+        if (alt.Player.local.vehicle) {
+            native.setVehicleEngineOn(alt.Player.local.vehicle.scriptID, false, false, true);
         }
     }
 });

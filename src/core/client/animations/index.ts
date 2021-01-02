@@ -5,6 +5,7 @@ import { loadAnim } from '../lib/async';
 
 import './drunk';
 import './taxi';
+// import './deathCam';
 
 /*
 	Flags need to be added together for desired effects.
@@ -29,6 +30,7 @@ alt.on(Action.PlayerPlayAnim, (data) => {
 
 alt.on(Action.PlayerClearAnim, () => {
     native.clearPedTasks(alt.Player.local.scriptID);
+    native.clearPedTasksImmediately(alt.Player.local.scriptID);
     if (!alt.Player.local.vehicle) {
         native.clearPedSecondaryTask(alt.Player.local.scriptID);
     }

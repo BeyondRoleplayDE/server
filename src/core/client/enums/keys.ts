@@ -6,6 +6,13 @@ export const enum Key {
     B = 66,
     E = 69,
     C = 67,
+    Crl = 17,
+    P = 80,
+    BACKSPACE = 8,
+    UP = 38,
+    DOWN = 40,
+    F = 70,
+    G = 71,
 }
 
 export const enum NativeKey {
@@ -32,7 +39,8 @@ export const enum NativeKey {
     InputMultiplayerInfo = 20, // Z
     InputSprint = 21, // LEFT SHIFT
     InputJump = 22, // SPACEBAR
-    InputEnter = 23, // F
+    /** F */
+    InputEnter = 23,
     InputAttack = 24, // LEFT MOUSE BUTTON
     InputAim = 25, // RIGHT MOUSE BUTTON
     InputLookBehind = 26, // C

@@ -3,40 +3,38 @@ import native from 'natives';
 import './nametags';
 import './handling/handsUp';
 import './handling/crouch';
+import './handling/openMap';
 import './animations';
 import './sounds';
 import './core/keyBindings';
 // import './intro/newjoiners';
-// import './object/placement';
-// import './weather/weather';
+import './weather/weather';
 import './AI/takeFromAirport';
+// import './AI/medics';
 import './vehicle/doors';
 import './vehicle/enter';
+// import './vehicle/push';
+import './core/notifications';
+import './handling/openDoor';
+import './weather/weather';
 
-///// ADMIN
-// import './vehicle/tags';
-
-import { Key } from './enums/keys';
 import { Action } from './enums/actions';
 
-// alt.on('keyup', async (key) => {
-//     if (alt.isMenuOpen() || native.isPauseMenuActive()) return;
-//     if (key == 'B'.charCodeAt(0)) {
-//         const closest = native.getClosestVehicle(
-//             alt.Player.local.pos.x,
-//             alt.Player.local.pos.y,
-//             alt.Player.local.pos.z,
-//             50,
-//             0,
-//             70
-//         );
-//         native.taskEnterVehicle(alt.Player.local.scriptID, closest, 5000, 2, 1.0, 2, 0);
-//     }
-// });
+const disableIdleCamera = alt.setInterval(() => {
+    native.invalidateIdleCam();
+    native._0x9E4CFFF989258472(); // Disable vehicle idle camera
+}, 19000);
+
+alt.on('resourceStop', () => {
+    if (disableIdleCamera) {
+        alt.clearEveryTick(disableIdleCamera);
+    }
+});
+
+// Zoom out mini map
+native.setRadarZoomPrecise(93.5);
 
 alt.on('consoleCommand', async (cmd, ...args) => {
-    if (cmd == 'bus') {
-    }
     if (cmd == 'drunk') {
         alt.emit(Action.PlayerGetDrunk);
     }
@@ -124,27 +122,49 @@ alt.on('consoleCommand', async (cmd, ...args) => {
         native.setEntityInvincible(ped, false);
         native.setPedSeeingRange(ped, 50);
 
-        const whistle = alt.setInterval(() => {
-            alt.emitServer(Action.PlayerWhistle, native.getPedBoneCoords(ped, 0x796e, 0, 0, 0), ped);
-        }, 5000);
+        // const whistle = alt.setInterval(() => {
+        //     alt.emitServer(Action.PlayerWhistle, native.getPedBoneCoords(ped, 0x796e, 0, 0, 0), ped);
+        // }, 5000);
 
         alt.on('resourceStop', () => {
-            if (whistle) {
-                alt.clearInterval(whistle);
-            }
+            // if (whistle) {
+            //     alt.clearInterval(whistle);
+            // }
             alt.log('Resouce core stopped');
             native.deletePed(ped);
         });
     }
+    if (cmd == 'marker') {
+        alt.everyTick(() => {
+            native.drawMarker(
+                1,
+                alt.Player.local.pos.x,
+                alt.Player.local.pos.y,
+                alt.Player.local.pos.z + 2,
+                0,
+                0,
+                0,
+                0,
+                180,
+                0,
+                2,
+                2,
+                2,
+                255,
+                128,
+                0,
+                50,
+                false,
+                true,
+                1,
+                false,
+                0,
+                0,
+                false
+            );
+        });
+    }
 });
-
-// alt.on('keyup', async (key) => {
-//     if (alt.isMenuOpen() || native.isPauseMenuActive()) return;
-//     if (key == Key.B) {
-//         // alt.emitServer('test');
-//         alt.emit('PlacingModule:setObject', 'bus');
-//     }
-// });
 
 /**
 export function serverEvent<Event extends keyof alt.IServerEvent>(event?: Event | string) {

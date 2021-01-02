@@ -11,9 +11,28 @@ export function distance(vector1: alt.IVector3, vector2: alt.IVector3) {
 }
 export function emitInRange(event: string, pos: alt.Vector3, range = 5, exclude = [], ...args: any) {
     for (let player of alt.Player.all) {
-        if (exclude.includes(player)) continue;
-        if (distance(player.pos, pos) > range) continue;
+        if (exclude.includes(player)) {
+            continue;
+        }
+        if (distance(player.pos, pos) > range) {
+            continue;
+        }
 
         alt.emitClient(player, event, ...args);
     }
+}
+export function getClosestVehicle(
+    player: { pos: alt.IVector3 },
+    radius = 50
+): { vehicle: alt.Vehicle; distance: number } {
+    let data = { vehicle: null, distance: radius };
+    alt.Vehicle.all.forEach((vehicle) => {
+        let dis = distance(player.pos, vehicle.pos);
+
+        if (dis < data.distance) {
+            data = { vehicle: vehicle, distance: dis };
+        }
+    });
+
+    return data;
 }
