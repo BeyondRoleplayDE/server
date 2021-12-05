@@ -19,6 +19,10 @@ alt.on('keydown', (key) => {
         }
         return;
     }
+    if (key === Key.SHIFT) {
+        alt.emit('push');
+
+    }
     if (key === Key.F) {
         //429 - _PED_FLAG_DISABLE_STARTING_VEH_ENGINE
         native.setPedConfigFlag(alt.Player.local.scriptID, 429, true);
@@ -58,6 +62,9 @@ alt.on('keydown', (key) => {
         // Taxi animation
         alt.emit(Action.PlayerPlayAnim, animationList.taxi);
         alt.emitServer(Action.PlayerWhistleStart, alt.Player.local.scriptID);
+    }
+    if (key === Key.SPACE || key === Key.SHIFT) {
+        native.setPedRagdollOnCollision(alt.Player.local.scriptID, true);
     }
 });
 
